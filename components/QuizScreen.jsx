@@ -1,5 +1,57 @@
 import ChoiceButton from "@/components/ChoiceButton";
 import { colorForType } from "@/lib/questionTypes";
+import ChartsRenderer from "@/components/ChartsRenderer";
+
+const renderPrompt = (prompt) => {
+  // CASE 1: plain string
+  if (typeof prompt === "string") {
+    return <div>{prompt}</div>;
+  }
+
+  // CASE 2: block system (preferred)
+  if (prompt.blocks) {
+    return prompt.blocks.map((block, idx) => {
+      switch (block.type) {
+        case "text":
+          return <div key={idx}>{block.value}</div>;
+
+        case "svg":
+          return (
+            <div
+              key={idx}
+              dangerouslySetInnerHTML={{ __html: block.value }}
+            />
+          );
+
+        case "chart":
+          return (
+            <div key={idx} className="question-chart">
+              <ChartsRenderer spec={block.value} />
+            </div>
+          );
+
+        default:
+          return null;
+      }
+    });
+  }
+
+  // CASE 3: legacy object (backwards compatibility)
+  return (
+    <>
+      {prompt.text && <div>{prompt.text}</div>}
+
+      {prompt.svg && (
+        <div dangerouslySetInnerHTML={{ __html: prompt.svg }} />
+      )}
+
+      {prompt?.chart && (
+        <div className="question-chart">
+        </div>
+      )}
+    </>
+  );
+};
 
 export default function QuizScreen({
   question,
@@ -37,21 +89,9 @@ export default function QuizScreen({
 
       <div className="question-card">
         <div className="question-text">
-          {typeof question.prompt === "string" ? (
-            question.prompt
-          ) : (
-            <>
-              <div>{question.prompt.text}</div>
-
-              {question.prompt.svg && (
-                <div
-                  className="question-svg"
-                  dangerouslySetInnerHTML={{ __html: question.prompt.svg }}
-                />
-              )}
-            </>
-          )}
+          {renderPrompt(question.prompt)}
         </div>
+
         <div className="choices">
           {question.choices.map((c, idx) => (
             <ChoiceButton
