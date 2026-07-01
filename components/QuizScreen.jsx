@@ -36,7 +36,22 @@ export default function QuizScreen({
       </div>
 
       <div className="question-card">
-        <div className="question-text">{question.prompt}</div>
+        <div className="question-text">
+          {typeof question.prompt === "string" ? (
+            question.prompt
+          ) : (
+            <>
+              <div>{question.prompt.text}</div>
+
+              {question.prompt.svg && (
+                <div
+                  className="question-svg"
+                  dangerouslySetInnerHTML={{ __html: question.prompt.svg }}
+                />
+              )}
+            </>
+          )}
+        </div>
         <div className="choices">
           {question.choices.map((c, idx) => (
             <ChoiceButton
